@@ -9,6 +9,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import auctionServer.ServerThread;
+import channels.TCPChannel;
 
 /* Should not be needed anymore
 import java.net.DatagramSocket;
@@ -20,6 +21,7 @@ public class BiddingClient {
 	public static int tcpPort;
 	public static String userName;
 	public static Socket clientSocket;
+        public static TCPChannel tcpChannel; 
 	/* UDP port should not be needed, therefore not handled as parameter?
 	public static int udpPort;
 	 */
@@ -53,7 +55,8 @@ public class BiddingClient {
 
 				try {
 					clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
-					out = new PrintWriter(clientSocket.getOutputStream(), true);
+                                        tcpChannel = new TCPChannel(clientSocket);
+					//out = new PrintWriter(clientSocket.getOutputStream(), true);
 					new ClientTcpThread(clientSocket).start();
 
 				} catch (UnknownHostException e) {
@@ -78,19 +81,21 @@ public class BiddingClient {
 					if (line.startsWith("!login ") && split.length == 2) {
 						// removed the udpPort from the !login command
 						// out.println(line + " " + udpPort);
-
-						out.println(line);
+                                                tcpChannel.send(line);
+						//out.println(line);
 						userName = split[1];
 					} else if (line.equals("!logout")) {
-						out.println(line);
+						//out.println(line);
+                                                tcpChannel.send(line);
 						userName = "";
 					} else if (line.equals("!list")) {
-						out.println(line);
-						
+						//out.println(line);
+						 tcpChannel.send(line);
 					} else if ((line.startsWith("!create ")) && (split.length >= 3)) {
 						try {
 							if ((Integer.parseInt(split[1]) > 0) && (Integer.parseInt(split[1]) < 1000000)) {
-								out.println(line);
+								//out.println(line);
+                                                             tcpChannel.send(line);
 							}
 						} catch (NumberFormatException e) {
 							System.out.println("Enter a valid duration");
@@ -104,11 +109,14 @@ public class BiddingClient {
 						} catch (NumberFormatException e) {
 							System.out.println("Error: Please enter correct values");
 						}
-						out.println(line);
+						//out.println(line);
+                                                 tcpChannel.send(line);
 					} else if (line.equals("!end")) {
-						out.println(line);
+						//out.println(line);
+                                             tcpChannel.send(line);
 						try {
-							out.close();
+							//out.close();
+                                                        tcpChannel.close(); 
 							stdin.close();
 							clientSocket.close();
 							/* Not necessary, since no UDPsocket is used
