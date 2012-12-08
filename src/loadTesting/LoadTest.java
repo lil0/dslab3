@@ -28,7 +28,7 @@ public class LoadTest {
     private static TestMC testMC;
     
     public static void main(String[] args) {    
-        System.out.println("im LoadTest");
+        //System.out.println("im LoadTest");
 
         if (args.length == 4) {
             host = args[0];
