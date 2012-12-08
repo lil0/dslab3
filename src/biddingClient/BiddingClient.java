@@ -22,6 +22,7 @@ public class BiddingClient {
 	public static String userName;
 	public static Socket clientSocket;
         public static TCPChannel tcpChannel; 
+        
 	/* UDP port should not be needed, therefore not handled as parameter?
 	public static int udpPort;
 	 */
@@ -146,6 +147,7 @@ public class BiddingClient {
 		}	
 	}
 	public static void usage(String message) {
+            //String messag = tcpChannel.receive();
 		if (message.equals("You have been logged out.")) {
 			userName = "";
 		} 

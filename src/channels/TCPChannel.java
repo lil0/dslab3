@@ -31,16 +31,21 @@ public class TCPChannel implements Channel{
     }
 
     public void receive() {
-        try {
-            
-            String inputLine = "";
-            while ((inputLine = in.readLine()) != null) {
-                BiddingClient.usage(inputLine);
+      
+           
+             try {
+                
+                String inputLine = "";
+                while ((inputLine = in.readLine()) != null) {
+                   BiddingClient.usage(inputLine);
+                    
+                }
+                
+                
+            } catch (IOException ex) {
+               System.out.println("Problem reading from Server with TCP.");
             }
-            
-        } catch (IOException ex) {
-           System.out.println("Problem reading from Server with TCP.");
-        }
+        
     }
 
     public void close() {

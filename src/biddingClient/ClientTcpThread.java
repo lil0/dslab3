@@ -17,17 +17,8 @@ public class ClientTcpThread extends Thread{
 	}
 	public void run() {
             
-            tcpChannel.receive();
-            
-		/*String inputLine = "";
-		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			while ((inputLine = in.readLine()) != null) {
-				BiddingClient.usage(inputLine);
-			}
-		} catch (IOException e) {
-			System.out.println("Problem reading from Server with TCP.");
-		}*/
+        tcpChannel.receive();
+          
 			
 	}
 }
