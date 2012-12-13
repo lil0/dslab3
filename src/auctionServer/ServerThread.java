@@ -123,7 +123,6 @@ public class ServerThread extends Thread {
 								System.out.println("Error processing event USER_LOGIN");
 							}
 
-							// TEST: read client secret key at login
 							try {
 								byte[] keyBytes = new byte[1024];
 								String pathToSecretKey = AuctionServer.clientsKeyDir + userName + ".key";
@@ -136,9 +135,6 @@ public class ServerThread extends Thread {
 							} catch (FileNotFoundException e) {
 								// TODO: should sth be done here?
 							}
-
-
-							//TEST
 
 							out.println("Successfully logged in as " + userName + "!");
 							auctionP.processInput(inputLine);

@@ -1,13 +1,24 @@
 package biddingClient;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.bouncycastle.util.encoders.Hex;
+
+import auctionServer.AuctionServer;
 import auctionServer.ServerThread;
 import channels.TCPChannel;
 
@@ -22,7 +33,8 @@ public class BiddingClient {
 	public static String userName;
 	public static Socket clientSocket;
 	public static TCPChannel tcpChannel; 
-
+	public static Key sharedKey;		// Shared secret key of client, shared with auctionServer
+	
 	/* UDP port should not be needed, therefore not handled as parameter?
 	public static int udpPort;
 	 */
@@ -54,6 +66,7 @@ public class BiddingClient {
 				new ClientUdpThread(udpSocket).start();
 				 */
 
+				// Try opening Sockets and Channels
 				try {
 					clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
 					tcpChannel = new TCPChannel(clientSocket);
@@ -85,10 +98,26 @@ public class BiddingClient {
 						tcpChannel.send(line);
 						//out.println(line);
 						userName = split[1];
+						
+						// Try reading client secret key
+						try {
+							byte[] keyBytes = new byte[1024];
+							String pathToSecretKey = AuctionServer.clientsKeyDir + userName + ".key";
+							FileInputStream fis = new FileInputStream(pathToSecretKey);
+							fis.read(keyBytes);
+							fis.close();
+							byte[] input = Hex.decode(keyBytes);
+							Key key = new SecretKeySpec(input,"HmacSHA256");
+							sharedKey = key;
+						} catch (Exception e) {
+							System.out.println("Error: Could not load Secret key");
+						}
+						
 					} else if (line.equals("!logout")) {
 						//out.println(line);
 						tcpChannel.send(line);
 						userName = "";
+						sharedKey = null;
 					} else if (line.equals("!list")) {
 						//out.println(line);
 						tcpChannel.send(line);
@@ -146,6 +175,29 @@ public class BiddingClient {
 			System.exit(-1);
 		}	
 	}
+	// Static function to calculate an HMAC for a given String
+		private static boolean compareHMAC (String message, String hmacToCompare) {
+			Key secretKey = AuctionServer.userKeys.get(userName);
+			byte[] hash = null;
+			
+			try {
+				Mac hMac = Mac.getInstance("HmacSHA256"); 
+				hMac.init(secretKey);
+				// MESSAGE is the message to sign in bytes 
+				hMac.update(message.getBytes());
+				hash = hMac.doFinal();
+			} catch (NoSuchAlgorithmException e) {
+				System.out.println("Error: Algorithm unknown");
+			} catch (InvalidKeyException e) {
+				System.out.println("Error: Invalid key");
+			}
+			
+			if (hash.toString().equals(hmacToCompare)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
 	public static void usage(String message) {
 		//String messag = tcpChannel.receive();
 		if (message.equals("You have been logged out.")) {
