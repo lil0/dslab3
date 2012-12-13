@@ -190,7 +190,12 @@ public class BiddingClient {
 				// if message hasn't been repeated
 				if (repeated == false) {
 					tcpChannel.send("!repeat");
+					repeated = true;
+				} else {
+					repeated = false;
 				}
+			} else {
+				repeated = false;
 			}
 			System.out.println(realMessage);
 		} else {
