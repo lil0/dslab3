@@ -100,6 +100,7 @@ public class ServerThread extends Thread {
 					// Close ressources?
 					System.exit(-1);
 				}
+				
 				if (inputLine.startsWith("!login")) {
 					if (!loggedIn) {
 						userName = inputLine.split(" ")[1];
@@ -170,6 +171,10 @@ public class ServerThread extends Thread {
 					}
 				} else if (inputLine.equals("!end")) {
 					break;	
+				} else if (inputLine.equals("!repeat")) {
+					//Resend last message to client
+					String lastMessage = AuctionServer.userLastMessage.get(userName);
+					out.println(AuctionProtocol.appendHMAC(lastMessage));
 				} else {
 					if (loggedIn) {
 						if (inputLine.startsWith("!create ") || inputLine.startsWith("!bid ") || inputLine.equals("!list")) {

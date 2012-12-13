@@ -20,19 +20,22 @@ public class AuctionServer {
 	public static int tcpPort;
 	public static String serverKey;
 	public static String clientsKeyDir;
-
+	
+	// User data structures
 	public static Map<String, String> userHostnames = Collections.synchronizedMap(new HashMap<String, String>());
 	public static Map<String, String> userMissed = Collections.synchronizedMap(new HashMap<String, String>());
-
+	//used for storing secret keys of clients
+	public static Map<String, Key> userKeys = Collections.synchronizedMap(new HashMap<String, Key>());
+	//used for storing last message of clients
+	public static Map<String, String> userLastMessage = Collections.synchronizedMap(new HashMap<String, String>());
+	
+	// Auction data structures
 	public static Map<Integer, String> auctionDescription = Collections.synchronizedMap(new HashMap<Integer, String>());
 	public static Map<Integer, Timestamp> auctionEndtime = Collections.synchronizedMap(new HashMap<Integer, Timestamp>());
 	public static Map<Integer, Double> auctionHighestBid = Collections.synchronizedMap(new HashMap<Integer, Double>());
 	public static Map<Integer, String> auctionHighestBidder = Collections.synchronizedMap(new HashMap<Integer, String>());
 	public static Map<Integer, String> auctionOwner = Collections.synchronizedMap(new HashMap<Integer, String>());
 	public static Map<Integer, Integer> auctionDuration = Collections.synchronizedMap(new HashMap<Integer, Integer>());
-
-	//used for storing secret keys of clients
-	public static Map<String, Key> userKeys = Collections.synchronizedMap(new HashMap<String, Key>());
 
 	public static int auctionCounter = 0;
 	public static boolean listening;

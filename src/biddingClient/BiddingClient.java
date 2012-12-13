@@ -11,6 +11,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.Mac;
@@ -22,9 +23,7 @@ import auctionServer.AuctionServer;
 import auctionServer.ServerThread;
 import channels.TCPChannel;
 
-/* Should not be needed anymore
-import java.net.DatagramSocket;
- */
+//TODO: test wrong hmacs with wrong keyfile on server
 
 public class BiddingClient {
 	//Input params
@@ -32,39 +31,25 @@ public class BiddingClient {
 	public static int tcpPort;
 	public static String userName;
 	public static Socket clientSocket;
-	public static TCPChannel tcpChannel; 
-	public static Key sharedKey;		// Shared secret key of client, shared with auctionServer
+	public static TCPChannel tcpChannel;
+	// Shared secret key of client, shared with auctionServer
+	public static Key sharedKey;		
+	private static boolean repeated;
 	
-	/* UDP port should not be needed, therefore not handled as parameter?
-	public static int udpPort;
-	 */
 	public static void main(String[] args) {
 		clientSocket = null;
-		/* Nont needed
-		DatagramSocket udpSocket = null;
-		 */
+		
 		PrintWriter out = null;
 		BufferedReader stdin = null;
 		userName = "";
-
+		repeated = false;
 		if (args.length == 5) {
 			host = args[0];
 			tcpPort = Integer.parseInt(args[1]);
-			/* Not needed
-			udpPort = Integer.parseInt(args[2]);
-			 */
+			
 			if (checkPort(tcpPort)) {
 				stdin = new BufferedReader(new InputStreamReader(System.in));
 				String line;
-				/* Should not be needed
-				try {
-					udpSocket = new DatagramSocket(udpPort);
-				} catch (SocketException e1) {
-					usage("Error binding UDP socket.");
-					System.exit(-1);
-				}
-				new ClientUdpThread(udpSocket).start();
-				 */
 
 				// Try opening Sockets and Channels
 				try {
@@ -93,10 +78,7 @@ public class BiddingClient {
 					String[] split = line.split(" ");
 
 					if (line.startsWith("!login ") && split.length == 2) {
-						// removed the udpPort from the !login command
-						// out.println(line + " " + udpPort);
 						tcpChannel.send(line);
-						//out.println(line);
 						userName = split[1];
 						
 						// Try reading client secret key
@@ -114,12 +96,10 @@ public class BiddingClient {
 						}
 						
 					} else if (line.equals("!logout")) {
-						//out.println(line);
 						tcpChannel.send(line);
 						userName = "";
 						sharedKey = null;
 					} else if (line.equals("!list")) {
-						//out.println(line);
 						tcpChannel.send(line);
 					} else if ((line.startsWith("!create ")) && (split.length >= 3)) {
 						try {
@@ -176,14 +156,13 @@ public class BiddingClient {
 		}	
 	}
 	// Static function to calculate an HMAC for a given String
-		private static boolean compareHMAC (String message, String hmacToCompare) {
+		private static boolean validHMAC (String message, String hmacToCompare) {
 			Key secretKey = AuctionServer.userKeys.get(userName);
 			byte[] hash = null;
 			
 			try {
 				Mac hMac = Mac.getInstance("HmacSHA256"); 
 				hMac.init(secretKey);
-				// MESSAGE is the message to sign in bytes 
 				hMac.update(message.getBytes());
 				hash = hMac.doFinal();
 			} catch (NoSuchAlgorithmException e) {
@@ -192,18 +171,31 @@ public class BiddingClient {
 				System.out.println("Error: Invalid key");
 			}
 			
-			if (hash.toString().equals(hmacToCompare)) {
-				return true;
-			} else {
-				return false;
-			}
+			boolean validHash = MessageDigest.isEqual(hash,hmacToCompare.getBytes());
+			return validHash;
 		}
 	public static void usage(String message) {
-		//String messag = tcpChannel.receive();
 		if (message.equals("You have been logged out.")) {
 			userName = "";
 		} 
-		System.out.println(message);
+		
+		// if message contains hmac
+		if (message.contains("*999*")) {
+			String realMessage = message.split("*999*")[0];
+			String hmac = message.split("*999*")[1];
+			
+			// if hmac is incorrect
+			if (!validHMAC(realMessage, hmac)) {
+				
+				// if message hasn't been repeated
+				if (repeated == false) {
+					tcpChannel.send("!repeat");
+				}
+			}
+			System.out.println(realMessage);
+		} else {
+			System.out.println(message);
+		}
 	}
 	public static void shutdown() {
 		// Kill everything properly and shut down

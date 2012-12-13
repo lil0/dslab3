@@ -49,7 +49,8 @@ public class AuctionProtocol {
 					completeString = completeString + entry.getKey() + ". '" + entry.getValue() + "' " + AuctionServer.auctionOwner.get(entry.getKey()) + " " + AuctionServer.auctionEndtime.get(entry.getKey()) + " " + AuctionServer.auctionHighestBid.get(entry.getKey()).toString() + " " + AuctionServer.auctionHighestBidder.get(entry.getKey()) + "\n";
 				}
 			}
-
+			AuctionServer.userLastMessage.put(userName, completeString);
+			
 			return appendHMAC(completeString);	
 		} else if (command.startsWith("!create ")) {
 			synchronized(AuctionServer.auctionDescription) {
@@ -96,7 +97,8 @@ public class AuctionProtocol {
 									System.out.println("Error processing event " + e.getClass());
 								}
 								String returnString = "An auction '" + fullDescription + "' with id " + newId + " has been created and will end on " + timestamp + ".";
-
+								AuctionServer.userLastMessage.put(userName, returnString);
+								
 								return appendHMAC(returnString);
 							}
 						}
@@ -173,6 +175,8 @@ public class AuctionProtocol {
 								} else {	
 									returnString = "Error: Auction doesn't exist.";
 								}
+								AuctionServer.userLastMessage.put(userName, returnString);
+								
 								return appendHMAC(returnString);
 							}
 						}
@@ -184,7 +188,7 @@ public class AuctionProtocol {
 	}
 
 	// Static function to add an HMAC to a given String
-	private static String appendHMAC (String message) {
+	protected static String appendHMAC (String message) {
 		Key secretKey = AuctionServer.userKeys.get(userName);
 		byte[] hash = null;
 		
@@ -206,7 +210,7 @@ public class AuctionProtocol {
 			System.out.println("Error: Invalid key");
 		}
 		
-		return message + " " + hash;
+		return message + "*999*" + hash;
 	}
 
 }
