@@ -16,9 +16,6 @@ public class ClientTcpThread extends Thread{
 		tcpChannel = new TCPChannel(this.socket);
 	}
 	public void run() {
-
 		tcpChannel.receive();
-
-
 	}
 }

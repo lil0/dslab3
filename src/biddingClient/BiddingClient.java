@@ -1,5 +1,6 @@
 package biddingClient;
 
+//TODO: Cleanup terminal message logic, print ">" through client and not server
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,11 +14,14 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.regex.Pattern;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.util.encoders.Hex;
+
+import sun.misc.BASE64Encoder;
 
 import auctionServer.AuctionServer;
 import auctionServer.ServerThread;
@@ -29,6 +33,7 @@ public class BiddingClient {
 	//Input params
 	public static String host;
 	public static int tcpPort;
+	public static String keyFolder;
 	public static String userName;
 	public static Socket clientSocket;
 	public static TCPChannel tcpChannel;
@@ -46,6 +51,7 @@ public class BiddingClient {
 		if (args.length == 5) {
 			host = args[0];
 			tcpPort = Integer.parseInt(args[1]);
+			keyFolder = args[4];
 			
 			if (checkPort(tcpPort)) {
 				stdin = new BufferedReader(new InputStreamReader(System.in));
@@ -84,7 +90,7 @@ public class BiddingClient {
 						// Try reading client secret key
 						try {
 							byte[] keyBytes = new byte[1024];
-							String pathToSecretKey = AuctionServer.clientsKeyDir + userName + ".key";
+							String pathToSecretKey = keyFolder + userName + ".key";
 							FileInputStream fis = new FileInputStream(pathToSecretKey);
 							fis.read(keyBytes);
 							fis.close();
@@ -111,8 +117,6 @@ public class BiddingClient {
 							System.out.println("Enter a valid duration");
 						}
 					} else if (line.startsWith("!bid ") && split.length == 3) {
-						int auctionId;
-						double bidAmount;
 						try {
 							Integer.parseInt(line.split(" ")[1]);
 							Double.parseDouble(line.split(" ")[2]);
@@ -157,12 +161,12 @@ public class BiddingClient {
 	}
 	// Static function to calculate an HMAC for a given String
 		private static boolean validHMAC (String message, String hmacToCompare) {
-			Key secretKey = AuctionServer.userKeys.get(userName);
 			byte[] hash = null;
+			BASE64Encoder encoder = new BASE64Encoder();
 			
 			try {
 				Mac hMac = Mac.getInstance("HmacSHA256"); 
-				hMac.init(secretKey);
+				hMac.init(sharedKey);
 				hMac.update(message.getBytes());
 				hash = hMac.doFinal();
 			} catch (NoSuchAlgorithmException e) {
@@ -171,8 +175,7 @@ public class BiddingClient {
 				System.out.println("Error: Invalid key");
 			}
 			
-			boolean validHash = MessageDigest.isEqual(hash,hmacToCompare.getBytes());
-			return validHash;
+			return encoder.encode(hash).equals(hmacToCompare);
 		}
 	public static void usage(String message) {
 		if (message.equals("You have been logged out.")) {
@@ -180,9 +183,20 @@ public class BiddingClient {
 		} 
 		
 		// if message contains hmac
-		if (message.contains("*999*")) {
-			String realMessage = message.split("*999*")[0];
-			String hmac = message.split("*999*")[1];
+		String controlSequence = "-999-";
+		String helpString = "";
+		//DEBUG
+		System.out.println("Received message ::" + message + "::");
+		//DEBUG
+		
+		
+		if (message.contains(controlSequence)) {
+			String realMessage = message.split(controlSequence)[0];
+			String hmac = message.split(controlSequence)[1];
+			
+			if (message.contains(">") && realMessage.split(">").length > 1) {
+				realMessage = realMessage.split(">")[1];
+			} 
 			
 			// if hmac is incorrect
 			if (!validHMAC(realMessage, hmac)) {

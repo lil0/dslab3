@@ -25,6 +25,8 @@ import java.util.logging.Logger;
 
 import javax.crypto.Mac;
 
+import sun.misc.BASE64Encoder;
+
 import event.AuctionEvent;
 import event.BidEvent;
 
@@ -39,8 +41,6 @@ public class AuctionProtocol {
 		if (command.startsWith("!login ")) {
 			userName = command.split(" ")[1];
 		} else if (command.equals("!list")) {
-
-			// Added synchronized block, is "this" correct?
 			synchronized(AuctionServer.auctionDescription) {
 				Iterator<?> iter = AuctionServer.auctionDescription.entrySet().iterator();
 
@@ -50,6 +50,11 @@ public class AuctionProtocol {
 				}
 			}
 			AuctionServer.userLastMessage.put(userName, completeString);
+			
+			//DEBUG
+			System.out.println("The full message is ::" + completeString + "::");
+			System.out.println("The full message plus appended is ::" + appendHMAC(completeString) + "::");
+			//DEBUG
 			
 			return appendHMAC(completeString);	
 		} else if (command.startsWith("!create ")) {
@@ -191,6 +196,7 @@ public class AuctionProtocol {
 	protected static String appendHMAC (String message) {
 		Key secretKey = AuctionServer.userKeys.get(userName);
 		byte[] hash = null;
+		BASE64Encoder encoder = new BASE64Encoder();
 		
 		try {
 			Mac hMac = Mac.getInstance("HmacSHA256"); 
@@ -198,19 +204,13 @@ public class AuctionProtocol {
 			// MESSAGE is the message to sign in bytes 
 			hMac.update(message.getBytes());
 			hash = hMac.doFinal();
-			
-			// DEBUG
-			System.out.println("The MAC is: " + hash);
-			System.out.println("The full signed message is: " + message + hash);
-			//
-			
 		} catch (NoSuchAlgorithmException e) {
 			System.out.println("Error: Algorithm unknown");
 		} catch (InvalidKeyException e) {
 			System.out.println("Error: Invalid key");
 		}
 		
-		return message + "*999*" + hash;
+		return message + "-999-" + encoder.encode(hash);
 	}
 
 }

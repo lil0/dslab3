@@ -178,16 +178,7 @@ public class ServerThread extends Thread {
 				} else {
 					if (loggedIn) {
 						if (inputLine.startsWith("!create ") || inputLine.startsWith("!bid ") || inputLine.equals("!list")) {
-
 							outputLine = auctionP.processInput(inputLine);
-							/*
-							if (inputLine.startsWith("!create") && !outputLine.startsWith("Error: ")) {
-
-							}
-							if (inputLine.startsWith("!bid") && !outputLine.startsWith("Error: ")) {
-								// Launch bid Event
-							}
-							 */
 							out.println(outputLine);
 						} else {
 							out.println("Unrecognized command.");
@@ -197,11 +188,6 @@ public class ServerThread extends Thread {
 					}
 				}
 			}
-
-			//DEBUG
-			System.out.println("User disconnected?");
-			//DEBUG
-
 			out.close();
 			in.close();
 			socket.close();
@@ -210,6 +196,7 @@ public class ServerThread extends Thread {
 			e.printStackTrace();
 		}
 	}
+	/*
 	private void answerClient(String message) {
 		try {
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -218,6 +205,7 @@ public class ServerThread extends Thread {
 			System.out.println("Error answering client!");
 		}
 	}
+	*/
 	private void billingServerLogin() {
 		if (billingServerHandler != null) {
 			try {
