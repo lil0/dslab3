@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.Key;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +18,8 @@ import java.util.Map;
 public class AuctionServer {
 
 	public static int tcpPort;
+	public static String serverKey;
+	public static String clientsKeyDir;
 
 	public static Map<String, String> userHostnames = Collections.synchronizedMap(new HashMap<String, String>());
 	public static Map<String, String> userMissed = Collections.synchronizedMap(new HashMap<String, String>());
@@ -28,6 +31,9 @@ public class AuctionServer {
 	public static Map<Integer, String> auctionOwner = Collections.synchronizedMap(new HashMap<Integer, String>());
 	public static Map<Integer, Integer> auctionDuration = Collections.synchronizedMap(new HashMap<Integer, Integer>());
 	
+	//used for storing secret keys of clients
+	public static Map<String, Key> userKeys = Collections.synchronizedMap(new HashMap<String, Key>());
+	
 	public static int auctionCounter = 0;
 	public static boolean listening;
 	public static ServerSocket serverSocket;
@@ -37,7 +43,12 @@ public class AuctionServer {
 			tcpPort = Integer.parseInt(args[0]);
 			String analBind = args[1];
 			String billBind = args[2];
-
+			
+			
+			// TODO: ADD param 3 and 4 handling
+			serverKey =  args[3];
+			clientsKeyDir = args[4];
+			
 			if (tcpPort >= 1024 || tcpPort >= 65535) {
 				serverSocket = null;
 				listening = true;

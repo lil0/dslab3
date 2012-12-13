@@ -6,8 +6,13 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.Key;
+import javax.crypto.spec.SecretKeySpec;
+
 import java.sql.Timestamp;
 import java.io.*;
+
+import org.bouncycastle.util.encoders.Hex;
 
 import event.AuctionEvent;
 import event.UserEvent;
@@ -117,7 +122,29 @@ public class ServerThread extends Thread {
 							} catch (Exception e) {
 								System.out.println("Error processing event USER_LOGIN");
 							}
-
+							
+							// TEST: read client secret key at login
+							try {
+								byte[] keyBytes = new byte[1024];
+								String pathToSecretKey = AuctionServer.clientsKeyDir + userName + ".key";
+								FileInputStream fis = new FileInputStream(pathToSecretKey);
+								fis.read(keyBytes);
+								fis.close();
+								byte[] input = Hex.decode(keyBytes);
+								Key key = new SecretKeySpec(input,"HmacSHA256");
+								AuctionServer.userKeys.put(userName, key);
+								
+								
+								//DEBUG
+								System.out.println("The HMAC key for user " + userName + " is " + key);
+								//DEBUG
+							} catch (FileNotFoundException e) {
+								// TODO: should sth be done here?
+							}
+							
+							
+							//TEST
+							
 							out.println("Successfully logged in as " + userName + "!");
 							auctionP.processInput(inputLine);
 						} else {
