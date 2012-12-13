@@ -1,9 +1,7 @@
 package auctionServer;
 
-/* Should not be needed anymore
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
- */
+// TODO: what happens if a client does not have a secret key? Should this be handled?
+
 import analyticsServer.AnalyticsRMIInterface;
 import billingServer.BillingServer;
 import billingServer.BillingServerSecure;
@@ -208,7 +206,7 @@ public class AuctionProtocol {
 			System.out.println("Error: Invalid key");
 		}
 		
-		return message + hash;
+		return message + " " + hash;
 	}
 
 }
