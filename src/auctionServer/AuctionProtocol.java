@@ -13,6 +13,9 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -22,11 +25,13 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.crypto.Mac;
+
 import event.AuctionEvent;
 import event.BidEvent;
 
 public class AuctionProtocol {
-	protected String userName;
+	protected static String userName;
 	static boolean exists;
 	protected AnalyticsRMIInterface analyticsHandler;
 
@@ -47,13 +52,13 @@ public class AuctionProtocol {
 				}
 			}
 
-			return completeString;	
+			return appendHMAC(completeString);	
 		} else if (command.startsWith("!create ")) {
-			synchronized(AuctionServer.auctionDescription){
-				synchronized(AuctionServer.auctionEndtime){
-					synchronized(AuctionServer.auctionHighestBid){
-						synchronized(AuctionServer.auctionHighestBidder){
-							synchronized(AuctionServer.auctionOwner){
+			synchronized(AuctionServer.auctionDescription) {
+				synchronized(AuctionServer.auctionEndtime) {
+					synchronized(AuctionServer.auctionHighestBid) {
+						synchronized(AuctionServer.auctionHighestBidder) {
+							synchronized(AuctionServer.auctionOwner) {
 
 								int duration = Integer.parseInt(split[1]);
 								String fullDescription = "";
@@ -92,22 +97,24 @@ public class AuctionProtocol {
 								} catch (Exception e) {
 									System.out.println("Error processing event " + e.getClass());
 								}
+								String returnString = "An auction '" + fullDescription + "' with id " + newId + " has been created and will end on " + timestamp + ".";
 
-								return "An auction '" + fullDescription + "' with id " + newId + " has been created and will end on " + timestamp + ".";
+								return appendHMAC(returnString);
 							}
 						}
 					}
 				}
 			}
 		} else if (command.startsWith("!bid ")) {
-			synchronized(AuctionServer.auctionDescription){
-				synchronized(AuctionServer.auctionEndtime){
-					synchronized(AuctionServer.auctionHighestBid){
-						synchronized(AuctionServer.auctionHighestBidder){
-							synchronized(AuctionServer.auctionOwner){
+			synchronized(AuctionServer.auctionDescription) {
+				synchronized(AuctionServer.auctionEndtime) {
+					synchronized(AuctionServer.auctionHighestBid) {
+						synchronized(AuctionServer.auctionHighestBidder) {
+							synchronized(AuctionServer.auctionOwner) {
 
 								int auctionId = Integer.parseInt(split[1]);
 								exists = false;
+								String returnString = "";
 
 								// Add check for existing auction ID
 								synchronized(this) {
@@ -157,17 +164,18 @@ public class AuctionProtocol {
 													System.out.println("Error processing event " + e.getMessage());
 												}
 											}
-											return "You successfully bid with " + bidValue + " on '" + AuctionServer.auctionDescription.get(auctionId) + "'.";
+											returnString = "You successfully bid with " + bidValue + " on '" + AuctionServer.auctionDescription.get(auctionId) + "'.";
 
 										} else {
-											return "Error: You can't overbid yourself.";
+											returnString = "Error: You can't overbid yourself.";
 										}
 									} else {
-										return "Error: Bid must be higher than current highest bid.";
+										returnString = "Error: Bid must be higher than current highest bid.";
 									}
 								} else {	
-									return "Error: Auction doesn't exist.";
+									returnString = "Error: Auction doesn't exist.";
 								}
+								return appendHMAC(returnString);
 							}
 						}
 					}
@@ -176,6 +184,33 @@ public class AuctionProtocol {
 		}
 		return "";
 	}
+
+	// Static function to add an HMAC to a given String
+	private static String appendHMAC (String message) {
+		Key secretKey = AuctionServer.userKeys.get(userName);
+		byte[] hash = null;
+		
+		try {
+			Mac hMac = Mac.getInstance("HmacSHA256"); 
+			hMac.init(secretKey);
+			// MESSAGE is the message to sign in bytes 
+			hMac.update(message.getBytes());
+			hash = hMac.doFinal();
+			
+			// DEBUG
+			System.out.println("The MAC is: " + hash);
+			System.out.println("The full signed message is: " + message + hash);
+			//
+			
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Error: Algorithm unknown");
+		} catch (InvalidKeyException e) {
+			System.out.println("Error: Invalid key");
+		}
+		
+		return message + hash;
+	}
+
 }
 class MyTask extends TimerTask {
 	private int id;
