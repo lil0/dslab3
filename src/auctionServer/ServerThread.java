@@ -122,7 +122,7 @@ public class ServerThread extends Thread {
 							} catch (Exception e) {
 								System.out.println("Error processing event USER_LOGIN");
 							}
-							
+
 							// TEST: read client secret key at login
 							try {
 								byte[] keyBytes = new byte[1024];
@@ -133,18 +133,13 @@ public class ServerThread extends Thread {
 								byte[] input = Hex.decode(keyBytes);
 								Key key = new SecretKeySpec(input,"HmacSHA256");
 								AuctionServer.userKeys.put(userName, key);
-								
-								
-								//DEBUG
-								System.out.println("The HMAC key for user " + userName + " is " + key);
-								//DEBUG
 							} catch (FileNotFoundException e) {
 								// TODO: should sth be done here?
 							}
-							
-							
+
+
 							//TEST
-							
+
 							out.println("Successfully logged in as " + userName + "!");
 							auctionP.processInput(inputLine);
 						} else {
@@ -155,7 +150,7 @@ public class ServerThread extends Thread {
 					}
 				} else if (inputLine.equals("!logout")) {
 					if (loggedIn == true) {
-						
+
 						AuctionServer.userHostnames.remove(userName);
 
 						// Call ProcessEvent from AnalyticsHandler for LOGOUT Event
@@ -171,7 +166,7 @@ public class ServerThread extends Thread {
 						}
 
 						out.println("Successfully logged out as " + userName + "!");
-						
+
 						loggedIn = false;
 						userName = null;
 					} else {
@@ -191,7 +186,7 @@ public class ServerThread extends Thread {
 							if (inputLine.startsWith("!bid") && !outputLine.startsWith("Error: ")) {
 								// Launch bid Event
 							}
-							*/
+							 */
 							out.println(outputLine);
 						} else {
 							out.println("Unrecognized command.");

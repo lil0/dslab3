@@ -44,7 +44,7 @@ public class AuctionProtocol {
 				while (iter.hasNext()) {
 					Map.Entry entry = (Map.Entry) iter.next();
 					completeString = completeString + entry.getKey() + ". '" + entry.getValue() + "' " + AuctionServer.auctionOwner.get(entry.getKey()) + " " + AuctionServer.auctionEndtime.get(entry.getKey()) + " " + AuctionServer.auctionHighestBid.get(entry.getKey()).toString() + " " + AuctionServer.auctionHighestBidder.get(entry.getKey()) + "\n";
-                                }
+				}
 			}
 
 			return completeString;	
@@ -80,13 +80,13 @@ public class AuctionProtocol {
 								AuctionServer.auctionOwner.put(newId, userName);
 								AuctionServer.auctionCounter += 1;
 								AuctionServer.auctionDuration.put(newId, duration);
-								
+
 								// Call ProcessEvent from AnalyticsHandler for AUCTION_STARTED
 								Timestamp logoutTimestamp = new Timestamp(System.currentTimeMillis());
 								long ts = logoutTimestamp.getTime();
 								try {
 									ServerThread.analyticsHandler.processEvent(new AuctionEvent("AUCTION_STARTED", ts, newId));
-									
+
 								} catch (RemoteException e) {
 									System.out.println("Couldn't connect to Analytics Server");
 								} catch (Exception e) {
@@ -192,7 +192,7 @@ class MyTask extends TimerTask {
 		String auctionOwner = AuctionServer.auctionOwner.get(id);
 		Double highestBid = AuctionServer.auctionHighestBid.get(id);
 		int duration = AuctionServer.auctionDuration.get(id);
-		
+
 		int auctionId = id;
 		try {
 			ServerThread.billingServerSecureHandler.billAuction(highestBidder, auctionId, highestBid);
@@ -215,15 +215,15 @@ class MyTask extends TimerTask {
 		}
 
 		// Create AUCTION_ENDED event
-			Timestamp logoutTimestamp = new Timestamp(System.currentTimeMillis());
-			long ts = logoutTimestamp.getTime();
-			try {
-				ServerThread.analyticsHandler.processEvent(new AuctionEvent("AUCTION_ENDED", ts, auctionId, duration, highestBidder));
-			} catch (RemoteException e) {
-				System.out.println("Couldn't connect to Analytics Server");
-			} catch (Exception e) {
-				System.out.println("Error processing event" + e.getClass());
-			}
+		Timestamp logoutTimestamp = new Timestamp(System.currentTimeMillis());
+		long ts = logoutTimestamp.getTime();
+		try {
+			ServerThread.analyticsHandler.processEvent(new AuctionEvent("AUCTION_ENDED", ts, auctionId, duration, highestBidder));
+		} catch (RemoteException e) {
+			System.out.println("Couldn't connect to Analytics Server");
+		} catch (Exception e) {
+			System.out.println("Error processing event" + e.getClass());
+		}
 
 		//remove auction from system
 		AuctionServer.auctionDescription.remove(id);

@@ -30,10 +30,10 @@ public class AuctionServer {
 	public static Map<Integer, String> auctionHighestBidder = Collections.synchronizedMap(new HashMap<Integer, String>());
 	public static Map<Integer, String> auctionOwner = Collections.synchronizedMap(new HashMap<Integer, String>());
 	public static Map<Integer, Integer> auctionDuration = Collections.synchronizedMap(new HashMap<Integer, Integer>());
-	
+
 	//used for storing secret keys of clients
 	public static Map<String, Key> userKeys = Collections.synchronizedMap(new HashMap<String, Key>());
-	
+
 	public static int auctionCounter = 0;
 	public static boolean listening;
 	public static ServerSocket serverSocket;
@@ -43,12 +43,12 @@ public class AuctionServer {
 			tcpPort = Integer.parseInt(args[0]);
 			String analBind = args[1];
 			String billBind = args[2];
-			
-			
+
+
 			// TODO: ADD param 3 and 4 handling
 			serverKey =  args[3];
 			clientsKeyDir = args[4];
-			
+
 			if (tcpPort >= 1024 || tcpPort >= 65535) {
 				serverSocket = null;
 				listening = true;
