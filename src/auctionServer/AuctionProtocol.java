@@ -52,8 +52,8 @@ public class AuctionProtocol {
 			AuctionServer.userLastMessage.put(userName, completeString);
 			
 			//DEBUG
-			System.out.println("The full message is ::" + completeString + "::");
-			System.out.println("The full message plus appended is ::" + appendHMAC(completeString) + "::");
+			//System.out.println("The full message is ::" + completeString + "::");
+			//System.out.println("The full message plus appended is ::" + appendHMAC(completeString) + "::");
 			//DEBUG
 			
 			return appendHMAC(completeString);	

@@ -40,14 +40,16 @@ public class BiddingClient {
 	// Shared secret key of client, shared with auctionServer
 	public static Key sharedKey;		
 	private static boolean repeated;
+	private static String listMessage;
 	
 	public static void main(String[] args) {
 		clientSocket = null;
-		
+		listMessage = "";
 		PrintWriter out = null;
 		BufferedReader stdin = null;
 		userName = "";
 		repeated = false;
+		
 		if (args.length == 5) {
 			host = args[0];
 			tcpPort = Integer.parseInt(args[1]);
@@ -184,13 +186,56 @@ public class BiddingClient {
 		
 		// if message contains hmac
 		String controlSequence = "-999-";
-		String helpString = "";
+		String helpString = message;
 		//DEBUG
-		System.out.println("Received message ::" + message + "::");
+		//System.out.println("Received message ::" + message + "::");
 		//DEBUG
 		
-		
-		if (message.contains(controlSequence)) {
+		if (message.contains(">") && message.split(">").length > 1) {
+			helpString = message.split(">")[1];
+		} 
+		/* 3 different cases:
+		1. the message is part of the list command: it starts with a digit or with an empty message
+		2. the message is a crucial message with controlSequence
+		3. the message is a non-crucial message
+		*/
+		if (Character.isDigit(helpString.charAt(0)) || helpString.split(controlSequence)[0].equals("")) {
+			// Check if its part of list command or already the HMAC
+			if (!helpString.contains(controlSequence)) {
+				listMessage = listMessage + helpString + "\n";
+				
+				//DEBUG
+				//System.out.println("String matches controlSequence? ::" + helpString.matches(controlSequence) + "::");
+				//System.out.println("the current listMessage ::" + listMessage + "::");
+				//
+			} else {
+				String listHash = helpString.split(controlSequence)[1];
+				if (!validHMAC(listMessage, listHash)) {
+					// if message hasn't been repeated
+					
+					//DEBUG
+					//System.out.println("The listmessage could not be matched :(");
+					//DEBUG
+					
+					if (repeated == false) {
+						tcpChannel.send("!repeat");
+						repeated = true;
+					} else {
+						repeated = false;
+					}
+				} else {
+					//DEBUG
+					//System.out.println("The listmessage could be matched!!!");
+					//DEBUG
+					repeated = false;
+				}
+				//DEBUG
+				//System.out.println("The complete listmessage is ::" + listMessage + "::");
+				//DEBUG
+				System.out.println(listMessage);	// IM HERE
+				listMessage = "";
+			}
+		} else if (message.contains(controlSequence)) {
 			String realMessage = message.split(controlSequence)[0];
 			String hmac = message.split(controlSequence)[1];
 			
