@@ -3,16 +3,16 @@ package auctionServer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+//import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
+//import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
+//import java.net.UnknownHostException;
 import java.security.Key;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+//import java.util.Iterator;
 import java.util.Map;
 
 public class AuctionServer {
@@ -47,8 +47,6 @@ public class AuctionServer {
 			String analBind = args[1];
 			String billBind = args[2];
 
-
-			// TODO: ADD param 3 and 4 handling
 			serverKey =  args[3];
 			clientsKeyDir = args[4];
 
@@ -70,7 +68,6 @@ public class AuctionServer {
 					}
 					serverSocket.close();
 				} catch (SocketException e) {
-					// TODO Auto-generated catch block
 					System.out.println("Socket was closed...stopped accepting requests.");
 					System.exit(0);
 				} catch (Exception e) {

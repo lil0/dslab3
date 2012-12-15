@@ -5,12 +5,12 @@ package auctionServer;
 import analyticsServer.AnalyticsRMIInterface;
 import billingServer.BillingServer;
 import billingServer.BillingServerSecure;
-import java.net.InetAddress;
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
+//import java.net.InetAddress;
+//import java.rmi.AccessException;
+//import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+//import java.rmi.registry.LocateRegistry;
+//import java.rmi.registry.Registry;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -136,7 +136,7 @@ public class AuctionProtocol {
 								if (exists == true) {
 									double oldValue = AuctionServer.auctionHighestBid.get(auctionId);
 									double bidValue = Double.parseDouble(split[2]);
-									String oldUser = AuctionServer.auctionHighestBidder.get(auctionId);
+									//String oldUser = AuctionServer.auctionHighestBidder.get(auctionId);
 
 									if (bidValue > AuctionServer.auctionHighestBid.get(auctionId)) {
 										// New bid must be higher than last winning bid
@@ -220,13 +220,12 @@ class MyTask extends TimerTask {
 	static BillingServerSecure billingServerSecure = null;
 	public MyTask(int newId) {
 		id = newId;
-		String internString;
+		//String internString;
 	}
 
 	public void run() {
-
 		String highestBidder = AuctionServer.auctionHighestBidder.get(id);
-		String auctionOwner = AuctionServer.auctionOwner.get(id);
+		//String auctionOwner = AuctionServer.auctionOwner.get(id);
 		Double highestBid = AuctionServer.auctionHighestBid.get(id);
 		int duration = AuctionServer.auctionDuration.get(id);
 

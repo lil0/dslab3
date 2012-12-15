@@ -1,6 +1,7 @@
 package event;
 
 public class AuctionEvent extends Event {
+	private static final long serialVersionUID = 2773502057694839454L;
 	private long auctionId;
 	private int duration;
 	private String auctionWinner;

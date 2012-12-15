@@ -3,18 +3,18 @@ package biddingClient;
 //TODO: Cleanup terminal message logic, print ">" through client and not server
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+//import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
+//import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.MessageDigest;
+//import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.regex.Pattern;
+//import java.util.regex.Pattern;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -23,11 +23,9 @@ import org.bouncycastle.util.encoders.Hex;
 
 import sun.misc.BASE64Encoder;
 
-import auctionServer.AuctionServer;
-import auctionServer.ServerThread;
+//import auctionServer.AuctionServer;
+//import auctionServer.ServerThread;
 import channels.TCPChannel;
-
-//TODO: test wrong hmacs with wrong keyfile on server
 
 public class BiddingClient {
 	//Input params
@@ -45,7 +43,7 @@ public class BiddingClient {
 	public static void main(String[] args) {
 		clientSocket = null;
 		listMessage = "";
-		PrintWriter out = null;
+		//PrintWriter out = null;
 		BufferedReader stdin = null;
 		userName = "";
 		repeated = false;
